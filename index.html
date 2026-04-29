@@ -1,86 +1,55 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Claude Code Skills Browser</title>
-  <link rel="stylesheet" href="https://unpkg.com/element-plus/dist/index.css">
-  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
-  <script src="https://unpkg.com/element-plus"></script>
-  <style>
-    body { font-family: sans-serif; background-color: #f5f7fa; margin: 0; }
-    .container { max-width: 1000px; margin: 40px auto; padding: 20px; background: #fff; border-radius: 8px; box-shadow: 0 2px 12px 0 rgba(0,0,0,0.1); }
-    .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #ebeef5; padding-bottom: 20px; margin-bottom: 20px; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Team Claude Skills Catalog</title>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
-  <div id="app" class="container">
-    <div class="header">
-      <h2>Claude Code Skills 一覧</h2>
-      <el-tag type="info">{{ skills.length }} Skills found</el-tag>
+<body class="bg-slate-50 text-slate-900">
+    <div id="app" class="max-w-5xl mx-auto py-12 px-4">
+        <header class="mb-12 border-b pb-8">
+            <h1 class="text-4xl font-bold text-slate-800">🛠 Team Skills Catalog</h1>
+            <p class="mt-4 text-slate-600">Claude Code で利用可能な共有スキルの一覧です。</p>
+        </header>
+
+        <div v-if="loading" class="text-center py-20">Loading...</div>
+        
+        <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div v-for="skill in skills" :key="skill.name" 
+                 class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 hover:shadow-md transition-shadow">
+                <div class="flex items-center justify-between mb-4">
+                    <span class="text-xs font-mono bg-blue-100 text-blue-700 px-2 py-1 rounded">/{{ skill.name }}</span>
+                </div>
+                <h2 class="text-xl font-bold mb-2">{{ skill.name }}</h2>
+                <p class="text-slate-600 text-sm mb-4">{{ skill.description }}</p>
+                <div class="text-xs text-slate-400 font-mono">Path: {{ skill.path }}</div>
+            </div>
+        </div>
     </div>
 
-    <el-table :data="skills" v-loading="loading" style="width: 100%">
-      <el-table-column prop="name" label="スキル名" width="250">
-        <template #default="scope">
-          <el-text fw="bold">{{ scope.row.name }}</el-text>
-        </template>
-      </el-table-column>
-      <el-table-column label="パス">
-        <template #default="scope">
-          <code>{{ scope.row.path }}</code>
-        </template>
-      </el-table-column>
-      <el-table-column label="アクション" width="150" align="center">
-        <template #default="scope">
-          <el-link :href="scope.row.url" target="_blank" type="primary">View MD</el-link>
-        </template>
-      </el-table-column>
-    </el-table>
-  </div>
+    <script>
+        const { createApp, ref, onMounted } = Vue
+        createApp({
+            setup() {
+                const skills = ref([])
+                const loading = ref(true)
 
-  <script>
-    const { createApp, ref, onMounted } = Vue;
+                onMounted(async () => {
+                    try {
+                        const response = await fetch('./skills.json')
+                        skills.value = await response.json()
+                    } catch (e) {
+                        console.error("Failed to load skills.json", e)
+                    } finally {
+                        loading.value = false
+                    }
+                })
 
-    createApp({
-      setup() {
-        const skills = ref([]);
-        const loading = ref(true);
-
-        // 設定：自分のリポジトリに合わせて変更
-        const OWNER = 'YOUR_USERNAME';
-        const REPO = 'YOUR_REPO_NAME';
-
-        const fetchSkills = async () => {
-          try {
-            // 1. ルートディレクトリのコンテンツを取得
-            const response = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/`);
-            const contents = await response.json();
-
-            // 2. ディレクトリのみを抽出
-            const dirs = contents.filter(item => item.type === 'dir');
-
-            // 3. 各ディレクトリの中にSKILL.mdがあるか確認（簡易化のためパスを生成）
-            // ※より正確にするなら各ディレクトリの中身を再度fetchする必要があります
-            const validSkills = dirs.map(dir => ({
-              name: dir.name,
-              path: dir.path,
-              url: `https://github.com/${OWNER}/${REPO}/blob/main/${dir.path}/SKILL.md`
-            }));
-
-            skills.value = validSkills;
-          } catch (error) {
-            console.error('Failed to fetch skills:', error);
-          } finally {
-            loading.value = false;
-          }
-        };
-
-        onMounted(fetchSkills);
-
-        return { skills, loading };
-      }
-    }).use(ElementPlus).mount('#app');
-  </script>
+                return { skills, loading }
+            }
+        }).mount('#app')
+    </script>
 </body>
 </html>
