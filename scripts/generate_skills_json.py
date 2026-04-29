@@ -4,19 +4,24 @@ import re
 
 def extract_metadata(file_path):
     with open(file_path, 'r', encoding='utf-8') as f:
-        content = f.read()
+        full_content = f.read()
     
-    # YAMLフロントマターを抽出 (name と description)
     metadata = {}
-    match = re.search(r'^---\s*\n(.*?)\n---\s*', content, re.DOTALL)
+    # フロントマターと本文を分離
+    match = re.search(r'^---\s*\n(.*?)\n---\s*\n(.*)', full_content, re.DOTALL)
     if match:
         yaml_text = match.group(1)
+        body_content = match.group(2) # ここがプロンプト本体
+        
         for line in yaml_text.split('\n'):
             if ':' in line:
                 key, val = line.split(':', 1)
                 metadata[key.strip()] = val.strip().strip('"').strip("'")
+        
+        metadata['content'] = body_content.strip()
+    else:
+        metadata['content'] = full_content.strip()
     
-    # フロントマターがない場合のフォールバック（ファイルパスから取得）
     if 'name' not in metadata:
         metadata['name'] = os.path.basename(os.path.dirname(file_path))
     if 'description' not in metadata:
