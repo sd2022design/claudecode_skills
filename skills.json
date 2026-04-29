@@ -12,5 +12,12 @@
     "disable-model-invocation": "true",
     "context": "fork",
     "path": "./code-test/SKILL.md"
+  },
+  {
+    "name": "auto-news",
+    "description": "これはテストの内容である。",
+    "disable-model-invocation": "true",
+    "context": "fork",
+    "path": "./auto-news/SKILL.md"
   }
 ]
