@@ -126,7 +126,10 @@
 
                 onMounted(async () => {
                     try {
-                        const response = await fetch('./skills.json')
+                        // URLの末尾にダミーのクエリパラメータ（?t=12345...）を付けてキャッシュを回避
+                        const response = await fetch(`./skills.json?t=${new Date().getTime()}`, {
+                            cache: 'no-store'
+                        })
                         skills.value = await response.json()
                     } catch (e) {
                         console.error("Failed to load skills.json", e)
