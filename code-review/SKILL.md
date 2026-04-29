@@ -1,6 +1,6 @@
 ---
 name: code-review
-description: Review existing code in the project. Use when the user says "コードレビュー", "code review", "review", "コードをチェック", "ファイルをレビュー", or wants to review specific files or the whole project.
+description: これはテストの内容です。
 disable-model-invocation: true
 context: fork
 ---
